@@ -17,38 +17,23 @@ router.post("/post",async (req, res) => {
                 authorId: 1, // 仮の値
             }
         })    
-        res.status(201).json({ newPost });
+        res.status(201).json(newPost);
     } catch (error) { 
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
     }
-    const user = await prisma.user.create({
-      data: {
-        username,
-        email,
-        password: hashedPassword,
-      }
-    });
-    return res.json({ user });
   });
   
 
 // 最新つびやき取得用
-router.post('/login', async (req, res) => { 
-    const { email, password } = req.body;
-    const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) {
-      return res.status(401).json({ message: 'User not found' });
+router.get('/get_latest_post', async (req, res) => { 
+    try {
+        const latestPosts = await prisma.post.findMany({ take: 10, orderBy: { createdAt: "desc" } });
+        return res.json(latestPosts);
+    }catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
     }
-  
-    const isPasswordValid = await bycrypt.compare(password, user.password);
-    
-    if (!isPasswordValid) {
-      return res.status(401).json({ message: 'Invalid password' });
-    }
-    
-    const token = jwt.sign({ id: user.id }, 'SECRET_KEY', { expiresIn: '1d' }, process);
-    return res.json({ token });
-  });
+});
 
 module.exports = router;    
