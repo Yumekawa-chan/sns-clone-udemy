@@ -6,7 +6,7 @@ const Timeline = () => {
         <div className="min-h-screen bg-gray-100">
             <main className="container mx-auto py-4">
                 <div className="bg-white shadow-md rounded p-4 mb-4">
-                    <form>
+                    <form onSubmit={(e) => e.preventDefault()}>
                         <textarea
                             className="w-full h-24 p-2 border border-gray-300 rounded resize-none focus:outline-none focus:ring-2 focus:ring-blue-400"
                             placeholder="What's on your mind?"

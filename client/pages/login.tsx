@@ -1,7 +1,30 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Head from 'next/head';
+import { useRouter } from 'next/router';
+import apiClient from './lib/apiClient';
+import { useAuth } from './context/auth';
 
-const login = () => {
+const Login = () => {
+    const [email, setEmail] = useState<string>("");
+    const [password, setPassword] = useState<string>("");
+  const router = useRouter();
+  const { login } = useAuth();
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        // フォームの値を使って新規登録処理を実装
+        try {
+            const response = await apiClient.post("auth/login", {
+                email: email,
+                password: password,
+            });
+          const token = response.data.token;
+          console.log(token);
+          router.push("/");
+          login(token);
+        } catch (error) {
+            alert("ログインログインに失敗しました: " + error);
+        }
+    }
   return (
       (
         <div
@@ -18,7 +41,7 @@ const login = () => {
         </div>
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
           <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-            <form>
+            <form onSubmit={handleSubmit}>
               <div>
                 <label
                   htmlFor="email"
@@ -33,6 +56,7 @@ const login = () => {
                   autoComplete="email"
                   required
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
               <div className="mt-6">
@@ -49,6 +73,7 @@ const login = () => {
                   autoComplete="current-password"
                   required
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
               <div className="mt-6">
@@ -67,4 +92,4 @@ const login = () => {
   )
 }
 
-export default login;
+export default Login;
