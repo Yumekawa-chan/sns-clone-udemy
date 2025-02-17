@@ -1,18 +1,20 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import apiClient from "../lib/apiClient";
 
-interface AuthContextType { 
+interface AuthContextType {
+    user: null | { id: number; email: string; username: string };
     login: (token: string) => void;
     logout: () => void;
 }
 
 interface AuthProviderProps {
     children: React.ReactNode;
- }
+}
 
-const AuthContext = React.createContext<AuthContextType> ({
-    login: () => { }, 
-    logout: () => { },
+const AuthContext = React.createContext<AuthContextType>({
+    user: null,
+    login: () => {},
+    logout: () => {},
 });
 
 export const useAuth = () => {
@@ -20,20 +22,46 @@ export const useAuth = () => {
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-    useEffect(() => { 
+    const [user, setUser] = useState<null | { id: number; email: string; username: string }>(null);
+
+    useEffect(() => {
         const token = localStorage.getItem("auth_token");
-        apiClient.defaults.headers["Authorization"] = `Bearer ${token}`;
+        if (token) {
+            apiClient.defaults.headers["Authorization"] = `Bearer ${token}`;
+            apiClient.get("/users/find")
+                .then((response) => {
+                    setUser(response.data.user);
+                })
+                .catch((error) => {
+                    console.error(error);
+                });
+        }
     }, []);
 
     const login = async (token: string) => {
         localStorage.setItem("auth_token", token);
+        apiClient.defaults.headers["Authorization"] = `Bearer ${token}`;
+        try {
+            apiClient.get("/users/find")
+                .then((response) => {
+                    setUser(response.data.user);
+                });
+        } catch (error) {
+            console.error("Error: ", error);
+        }
     };
 
-    const logout = () => { 
+    const logout = () => {
         localStorage.removeItem("auth_token");
+        delete apiClient.defaults.headers["Authorization"];
+        setUser(null);
     };
 
-    const value = { login, logout };
+    const value = { user, login, logout };
 
-    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-}
+    return (
+        <AuthContext.Provider value={value}>
+            {children}
+        </AuthContext.Provider>
+    );
+};
