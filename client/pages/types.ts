@@ -1,4 +1,5 @@
 export interface UserType {
+    profile: ProfileType;
     id: number;
     username: string;
     email: string;
@@ -6,7 +7,15 @@ export interface UserType {
     posts: PostType[];
 }
 
-export interface PostType { 
+export interface ProfileType {
+    id: number;
+    bio: string;
+    profileImage: string;
+    user: UserType;
+    userId: number;
+}
+
+export interface PostType {
     id: number;
     content: string;
     createdAt: string;
